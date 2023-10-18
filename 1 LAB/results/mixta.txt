@@ -1,0 +1,200 @@
+ ********************************************************************
+    
+Dice Scores of Brain 1 with SPM Segementataion with .001_40mm
+    
+Dice Score from CSF segementation 80.086853%
+Dice Score from WM segementation 82.698648%
+Dice Score from GM segementation 75.522156%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 2 with SPM Segementataion with .001_40mm
+    
+Dice Score from CSF segementation 75.517644%
+Dice Score from WM segementation 75.970215%
+Dice Score from GM segementation 70.480658%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 3 with SPM Segementataion with .001_40mm
+    
+Dice Score from CSF segementation 78.299839%
+Dice Score from WM segementation 82.387526%
+Dice Score from GM segementation 73.245248%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 4 with SPM Segementataion with .001_40mm
+    
+Dice Score from CSF segementation 79.976619%
+Dice Score from WM segementation 81.638544%
+Dice Score from GM segementation 76.671650%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 5 with SPM Segementataion with .001_40mm
+    
+Dice Score from CSF segementation 72.420735%
+Dice Score from WM segementation 84.226895%
+Dice Score from GM segementation 78.620016%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 1 with SPM Segementataion with .001_60mm
+    
+Dice Score from CSF segementation 79.899954%
+Dice Score from WM segementation 82.843822%
+Dice Score from GM segementation 75.465075%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 2 with SPM Segementataion with .001_60mm
+    
+Dice Score from CSF segementation 75.649254%
+Dice Score from WM segementation 76.057768%
+Dice Score from GM segementation 70.528309%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 3 with SPM Segementataion with .001_60mm
+    
+Dice Score from CSF segementation 78.075527%
+Dice Score from WM segementation 82.617023%
+Dice Score from GM segementation 73.292900%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 4 with SPM Segementataion with .001_60mm
+    
+Dice Score from CSF segementation 79.951298%
+Dice Score from WM segementation 81.574917%
+Dice Score from GM segementation 76.492134%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 5 with SPM Segementataion with .001_60mm
+    
+Dice Score from CSF segementation 72.317616%
+Dice Score from WM segementation 84.366855%
+Dice Score from GM segementation 78.702624%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 1 with SPM Segementataion with .001_80mm
+    
+Dice Score from CSF segementation 79.747674%
+Dice Score from WM segementation 82.818463%
+Dice Score from GM segementation 75.448552%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 2 with SPM Segementataion with .001_80mm
+    
+Dice Score from CSF segementation 75.744009%
+Dice Score from WM segementation 76.191024%
+Dice Score from GM segementation 70.644901%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 3 with SPM Segementataion with .001_80mm
+    
+Dice Score from CSF segementation 77.795532%
+Dice Score from WM segementation 82.668525%
+Dice Score from GM segementation 73.189757%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 4 with SPM Segementataion with .001_80mm
+    
+Dice Score from CSF segementation 79.807989%
+Dice Score from WM segementation 81.552387%
+Dice Score from GM segementation 76.450043%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 5 with SPM Segementataion with .001_80mm
+    
+Dice Score from CSF segementation 72.079389%
+Dice Score from WM segementation 84.412261%
+Dice Score from GM segementation 78.719882%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 1 with SPM Segementataion with .001_100mm
+    
+Dice Score from CSF segementation 79.715960%
+Dice Score from WM segementation 82.824756%
+Dice Score from GM segementation 75.426049%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 2 with SPM Segementataion with .001_100mm
+    
+Dice Score from CSF segementation 75.715257%
+Dice Score from WM segementation 76.275312%
+Dice Score from GM segementation 70.574851%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 3 with SPM Segementataion with .001_100mm
+    
+Dice Score from CSF segementation 77.795181%
+Dice Score from WM segementation 82.733603%
+Dice Score from GM segementation 73.195916%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 4 with SPM Segementataion with .001_100mm
+    
+Dice Score from CSF segementation 79.795712%
+Dice Score from WM segementation 81.511917%
+Dice Score from GM segementation 76.388027%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 5 with SPM Segementataion with .001_100mm
+    
+Dice Score from CSF segementation 72.080728%
+Dice Score from WM segementation 84.459299%
+Dice Score from GM segementation 78.681302%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 1 with SPM Segementataion with .001_120mm
+    
+Dice Score from CSF segementation 79.721754%
+Dice Score from WM segementation 82.813582%
+Dice Score from GM segementation 75.379002%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 2 with SPM Segementataion with .001_120mm
+    
+Dice Score from CSF segementation 75.632908%
+Dice Score from WM segementation 76.278890%
+Dice Score from GM segementation 70.452600%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 3 with SPM Segementataion with .001_120mm
+    
+Dice Score from CSF segementation 77.807114%
+Dice Score from WM segementation 82.706136%
+Dice Score from GM segementation 73.163721%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 4 with SPM Segementataion with .001_120mm
+    
+Dice Score from CSF segementation 79.718749%
+Dice Score from WM segementation 81.509956%
+Dice Score from GM segementation 76.385725%
+    
+ ********************************************************************
+    
+Dice Scores of Brain 5 with SPM Segementataion with .001_120mm
+    
+Dice Score from CSF segementation 71.941299%
+Dice Score from WM segementation 84.477841%
+Dice Score from GM segementation 78.660080%
+    
