@@ -104,7 +104,7 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
         random_state=seed).fit(data)
         labels[np.arange(n_samples), kmeans.labels_] = 1
     elif type == 'random':
-        rng = np.random.default_rng(seed=42)
+        rng = np.random.default_rng(seed=seed)
         idx = rng.choice(n_components, size=n_samples)
         labels[np.arange(n_samples),idx] = 1
         
@@ -158,7 +158,7 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
         random_state=seed).fit(data)
         labels[np.arange(n_samples), kmeans.labels_] = 1
     elif type == 'random':
-        rng = np.random.default_rng(seed=42)
+        rng = np.random.default_rng(seed=seed)
         idx = rng.choice(n_components, size=n_samples)
         labels[np.arange(n_samples),idx] = 1
     
