@@ -82,7 +82,7 @@ def get_initial_values(x,labels,cov_reg=1e-6):
             sigmas = (sigmas[:, np.newaxis])[:, np.newaxis]
     return means, sigmas, counts
 
-def get_tissue(t1,t2,brain_mask):
+def get_tissue(t1,t2,brain_mask,type='knn'):
 
     
     t1_array = min_max_normalization(t1)
@@ -97,12 +97,18 @@ def get_tissue(t1,t2,brain_mask):
     n_samples = len(data)
     labels = np.zeros((n_samples, n_components))
     
-    
-    kmeans = KMeans(
-    n_clusters=n_components, 
-    random_state=seed).fit(data)
-    labels[np.arange(n_samples), kmeans.labels_] = 1
-    
+    if type == 'knn':
+        kmeans = KMeans(
+        n_clusters=n_components, 
+        random_state=seed).fit(data)
+        labels[np.arange(n_samples), kmeans.labels_] = 1
+    elif type == 'means':
+        mean_shift = MeanShift(
+            bandwidth=3).fit(data)
+        means = mean_shift.cluster_centers_
+        labels = np.zeros((n_samples, means.shape[0]))
+        labels[np.arange(n_samples), mean_shift.labels_] = 1
+        
     means, sigmas, counts = get_initial_values(data,labels)
     
     priors = np.ones((n_components, 1)) / n_components
@@ -116,9 +122,11 @@ def get_tissue(t1,t2,brain_mask):
 
         for i in range(n_components):
                 likelihood[:, i] = likelihood[:, i] * priors[i]
+        
         log_lkh = np.sum(np.log(np.sum(likelihood, 1)), 0)
         difference = abs(prev_log_lkh - log_lkh)
         prev_log_lkh = log_lkh
+        
         if difference < change_tolerance:
             break
         
@@ -141,11 +149,17 @@ def get_tissue(t1,t2,brain_mask):
     n_samples = len(data)
     labels = np.zeros((n_samples, n_components))
     
-    
-    kmeans = KMeans(
-    n_clusters=n_components, 
-    random_state=seed).fit(data)
-    labels[np.arange(n_samples), kmeans.labels_] = 1
+    if type == 'knn':
+        kmeans = KMeans(
+        n_clusters=n_components, 
+        random_state=seed).fit(data)
+        labels[np.arange(n_samples), kmeans.labels_] = 1
+    elif type == 'means':
+        mean_shift = MeanShift(
+            bandwidth=3).fit(data)
+        means = mean_shift.cluster_centers_
+        labels = np.zeros((n_samples, means.shape[0]))
+        labels[np.arange(n_samples), mean_shift.labels_] = 1
     
     means, sigmas, counts = get_initial_values(data,labels)
     
@@ -182,6 +196,48 @@ def get_tissue(t1,t2,brain_mask):
     
     return t1_seg_res, t2_seg_res
 
+def match_pred_with_gt(pred,gt):
+    wm = np.zeros_like(pred)
+    gm = np.zeros_like(pred)
+    cfs = np.zeros_like(pred)
+    for tets_prob in range(3):
+        probs = []
+        for prob in range(3):
+            gt_layer = np.where(gt==prob+1, 1, 0)
+            test = np.where(pred==tets_prob+1,1,0)
+            intersection = np.sum(np.logical_and(gt_layer, test))
+            union = np.sum(np.logical_or(gt_layer, test))
+            iou = intersection / union
+            probs.append(iou)
+        
+        max_location = probs.index(max(probs))
+        
+        if (max_location+1) == 1:
+            cfs[pred==tets_prob+1] = max_location +1 
+        if (max_location+1) == 2:
+            gm[pred==tets_prob+1] = max_location+1
+        if (max_location+1) == 3:
+            wm[pred==tets_prob+1] = max_location+1
+
+    return wm, gm, cfs
+
+
+def plots(volumes, names, slice_n: int = 20):
+    """Generates plots of all volumes with the corresponding names of the volume plotted
+    Args:
+        volumes (List[np.ndarray]): List on np.ndarrays to plot
+        names (List[str]): List of string with the volumes names
+        slice_n (int, optional): Axial slice N° to plot. Defaults to 20.
+    """
+    n = len(volumes)
+    fig, ax = plt.subplots(1, n, figsize=(20, 5))
+    for i in range(n):
+        cmap = 'gray' if len(np.unique(volumes[i])) > 4 else 'viridis'
+        ax[i].set_title(names[i])
+        ax[i].imshow(volumes[i][slice_n, :, :], cmap=cmap)
+        ax[i].set_xticks([])
+        ax[i].set_yticks([])
+    plt.show()
     
 
         
