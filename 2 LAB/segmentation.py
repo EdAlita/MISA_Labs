@@ -5,7 +5,8 @@ import os
 import nibabel as nib
 from tqdm import tqdm
 from scipy.stats import multivariate_normal
-from sklearn.cluster import KMeans, MeanShift
+from sklearn.cluster import KMeans, MeanShift, estimate_bandwidth
+import time
 
 # import warnings filter
 from warnings import simplefilter
@@ -102,12 +103,10 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
         n_clusters=n_components, 
         random_state=seed).fit(data)
         labels[np.arange(n_samples), kmeans.labels_] = 1
-    elif type == 'means':
-        mean_shift = MeanShift(
-            bandwidth=3).fit(data)
-        means = mean_shift.cluster_centers_
-        labels = np.zeros((n_samples, means.shape[0]))
-        labels[np.arange(n_samples), mean_shift.labels_] = 1
+    elif type == 'random':
+        rng = np.random.default_rng(seed=42)
+        idx = rng.choice(n_components, size=n_samples)
+        labels[np.arange(n_samples),idx] = 1
         
     means, sigmas, counts = get_initial_values(data,labels)
     
@@ -115,13 +114,15 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
     
     prev_log_lkh = 0
     
+    start = time.time()
+    
     for it in tqdm(range(max_iter)):
         n_iter_ = it + 1
 
         posteriors, likelihood  = expectation(data,means,sigmas,priors)
 
         for i in range(n_components):
-                likelihood[:, i] = likelihood[:, i] * priors[i]
+            likelihood[:, i] = likelihood[:, i] * priors[i]
         
         log_lkh = np.sum(np.log(np.sum(likelihood, 1)), 0)
         difference = abs(prev_log_lkh - log_lkh)
@@ -143,6 +144,8 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
     
     t1_seg_res = predictions.reshape(t1.shape)
     
+    t1_t = time.time() - start
+    
     data = np.array([t1_vector, t2_vector]).T  
     
     n_feat = data.shape[1] if np.ndim(data) > 1 else 1
@@ -154,12 +157,10 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
         n_clusters=n_components, 
         random_state=seed).fit(data)
         labels[np.arange(n_samples), kmeans.labels_] = 1
-    elif type == 'means':
-        mean_shift = MeanShift(
-            bandwidth=3).fit(data)
-        means = mean_shift.cluster_centers_
-        labels = np.zeros((n_samples, means.shape[0]))
-        labels[np.arange(n_samples), mean_shift.labels_] = 1
+    elif type == 'random':
+        rng = np.random.default_rng(seed=42)
+        idx = rng.choice(n_components, size=n_samples)
+        labels[np.arange(n_samples),idx] = 1
     
     means, sigmas, counts = get_initial_values(data,labels)
     
@@ -167,13 +168,16 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
     
     prev_log_lkh = 0
     
+    start = time.time()
+    
     for it in tqdm(range(max_iter)):
         n_iter_ = it + 1
 
         posteriors, likelihood  = expectation(data,means,sigmas,priors)
 
         for i in range(n_components):
-                likelihood[:, i] = likelihood[:, i] * priors[i]
+            likelihood[:, i] = likelihood[:, i] * priors[i]
+            
         log_lkh = np.sum(np.log(np.sum(likelihood, 1)), 0)
         difference = abs(prev_log_lkh - log_lkh)
         prev_log_lkh = log_lkh
@@ -193,8 +197,9 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
     
     t2_seg_res = predictions.reshape(t1.shape)  
     
+    t2_t = time.time() - start
     
-    return t1_seg_res, t2_seg_res
+    return t1_seg_res, t2_seg_res, t1_t, t2_t
 
 def match_pred_with_gt(pred,gt):
     wm = np.zeros_like(pred)
@@ -222,19 +227,12 @@ def match_pred_with_gt(pred,gt):
     return wm, gm, cfs
 
 
-def plots(volumes, names, slice_n: int = 20):
-    """Generates plots of all volumes with the corresponding names of the volume plotted
-    Args:
-        volumes (List[np.ndarray]): List on np.ndarrays to plot
-        names (List[str]): List of string with the volumes names
-        slice_n (int, optional): Axial slice N° to plot. Defaults to 20.
-    """
+def plots(volumes, names, slice_n: int = 25):
     n = len(volumes)
     fig, ax = plt.subplots(1, n, figsize=(20, 5))
     for i in range(n):
-        cmap = 'gray' if len(np.unique(volumes[i])) > 4 else 'viridis'
         ax[i].set_title(names[i])
-        ax[i].imshow(volumes[i][slice_n, :, :], cmap=cmap)
+        ax[i].imshow(volumes[i][slice_n, :, :], cmap='gray')
         ax[i].set_xticks([])
         ax[i].set_yticks([])
     plt.show()
