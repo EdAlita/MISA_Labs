@@ -7,6 +7,7 @@ from tqdm import tqdm
 from scipy.stats import multivariate_normal
 from sklearn.cluster import KMeans, MeanShift, estimate_bandwidth
 import time
+import random
 
 # import warnings filter
 from warnings import simplefilter
@@ -16,7 +17,7 @@ simplefilter(action='ignore', category=FutureWarning)
 n_components: int = 3
 max_iter: int = 100
 change_tolerance: float = 1e-6
-seed: float = 420
+seed: float = 123
 
 def maximation(x,n_samples,posteriors):
     
@@ -160,8 +161,8 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
     elif type == 'random':
         rng = np.random.default_rng(seed=seed)
         idx = rng.choice(n_components, size=n_samples)
-        labels[np.arange(n_samples),idx] = 1
-    
+        labels[np.arange(n_samples),idx] = 1   
+         
     means, sigmas, counts = get_initial_values(data,labels)
     
     priors = np.ones((n_components, 1)) / n_components
@@ -236,6 +237,16 @@ def plots(volumes, names, slice_n: int = 25):
         ax[i].set_xticks([])
         ax[i].set_yticks([])
     plt.show()
+    
+def dice_score(gt, pred):
+    classes = np.unique(gt[gt != 0])
+    dice = np.zeros((len(classes)))
+    for i in classes:
+        bin_pred = np.where(pred == i, 1, 0)
+        bin_gt = np.where(gt == i, 1, 0)
+        dice[i-1] = np.sum(bin_pred[bin_gt == 1]) * 2.0 / (np.sum(bin_pred) + np.sum(bin_gt))
+    return dice.tolist()
+    
     
 
         
