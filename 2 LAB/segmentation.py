@@ -6,6 +6,7 @@ import nibabel as nib
 from tqdm import tqdm
 from scipy.stats import multivariate_normal
 from sklearn.cluster import KMeans, MeanShift, estimate_bandwidth
+from numpy.random import Generator, PCG64DXSM
 import time
 import random
 
@@ -17,7 +18,7 @@ simplefilter(action='ignore', category=FutureWarning)
 n_components: int = 3
 max_iter: int = 100
 change_tolerance: float = 1e-6
-seed: float = 123
+seed = 123
 
 def maximation(x,n_samples,posteriors):
     
@@ -84,7 +85,7 @@ def get_initial_values(x,labels,cov_reg=1e-6):
             sigmas = (sigmas[:, np.newaxis])[:, np.newaxis]
     return means, sigmas, counts
 
-def get_tissue(t1,t2,brain_mask,type='knn'):
+def get_tissue(t1,t2,brain_mask,type='knn',operation='EM'):
 
     
     t1_array = min_max_normalization(t1)
@@ -95,110 +96,136 @@ def get_tissue(t1,t2,brain_mask,type='knn'):
     
     data = np.array(t1_vector)[:, np.newaxis]
     
-    n_feat = data.shape[1] if np.ndim(data) > 1 else 1
-    n_samples = len(data)
-    labels = np.zeros((n_samples, n_components))
+    if operation == 'EM':
     
-    if type == 'knn':
-        kmeans = KMeans(
+        n_feat = data.shape[1] if np.ndim(data) > 1 else 1
+        n_samples = len(data)
+        labels = np.zeros((n_samples, n_components))
+    
+        if type == 'knn':
+            kmeans = KMeans(
+            n_clusters=n_components, 
+            random_state=seed).fit(data)
+            labels[np.arange(n_samples), kmeans.labels_] = 1
+        elif type == 'random':
+            rng = np.random.default_rng(seed=seed)
+            idx = rng.choice(n_components, size=n_samples)
+            labels[np.arange(n_samples),idx] = 1
+        
+        means, sigmas, counts = get_initial_values(data,labels)
+    
+        priors = np.ones((n_components, 1)) / n_components
+    
+        prev_log_lkh = 0
+    
+        start = time.time()
+    
+        for it in tqdm(range(max_iter)):
+            n_iter_ = it + 1
+
+            posteriors, likelihood  = expectation(data,means,sigmas,priors)
+
+            for i in range(n_components):
+                likelihood[:, i] = likelihood[:, i] * priors[i]
+        
+            log_lkh = np.sum(np.log(np.sum(likelihood, 1)), 0)
+            difference = abs(prev_log_lkh - log_lkh)
+            prev_log_lkh = log_lkh
+        
+            if difference < change_tolerance:
+                break
+            
+            means, sigmas, priors = maximation(data,n_samples,posteriors)
+        
+        cluster_centers = means
+    
+        posteriors, likelihood  = expectation(data,means,sigmas,priors)
+    
+        preds = np.argmax(posteriors, 1)
+    
+        predictions = brain_mask.flatten()
+        predictions[predictions == 255] = preds + 1
+    
+        t1_seg_res = predictions.reshape(t1.shape)
+    
+        t1_t = time.time() - start
+        
+    if operation == 'Kmeans':
+        start = time.time()
+        model = KMeans(
         n_clusters=n_components, 
         random_state=seed).fit(data)
-        labels[np.arange(n_samples), kmeans.labels_] = 1
-    elif type == 'random':
-        rng = np.random.default_rng(seed=seed)
-        idx = rng.choice(n_components, size=n_samples)
-        labels[np.arange(n_samples),idx] = 1
-        
-    means, sigmas, counts = get_initial_values(data,labels)
-    
-    priors = np.ones((n_components, 1)) / n_components
-    
-    prev_log_lkh = 0
-    
-    start = time.time()
-    
-    for it in tqdm(range(max_iter)):
-        n_iter_ = it + 1
-
-        posteriors, likelihood  = expectation(data,means,sigmas,priors)
-
-        for i in range(n_components):
-            likelihood[:, i] = likelihood[:, i] * priors[i]
-        
-        log_lkh = np.sum(np.log(np.sum(likelihood, 1)), 0)
-        difference = abs(prev_log_lkh - log_lkh)
-        prev_log_lkh = log_lkh
-        
-        if difference < change_tolerance:
-            break
-        
-        means, sigmas, priors = maximation(data,n_samples,posteriors)
-        
-    cluster_centers = means
-    
-    posteriors, likelihood  = expectation(data,means,sigmas,priors)
-    
-    preds = np.argmax(posteriors, 1)
-    
-    predictions = brain_mask.flatten()
-    predictions[predictions == 255] = preds + 1
-    
-    t1_seg_res = predictions.reshape(t1.shape)
-    
-    t1_t = time.time() - start
+        preds = model.predict(data)
+        predictions = brain_mask.flatten()
+        predictions[predictions == 255] = preds + 1
+        t1_seg_res = predictions.reshape(t1.shape)
+        t1_t = time.time() - start
     
     data = np.array([t1_vector, t2_vector]).T  
     
-    n_feat = data.shape[1] if np.ndim(data) > 1 else 1
-    n_samples = len(data)
-    labels = np.zeros((n_samples, n_components))
+    if operation == 'EM':
     
-    if type == 'knn':
-        kmeans = KMeans(
+        n_feat = data.shape[1] if np.ndim(data) > 1 else 1
+        n_samples = len(data)
+        labels = np.zeros((n_samples, n_components))
+    
+        if type == 'knn':
+            kmeans = KMeans(
+            n_clusters=n_components, 
+            random_state=seed).fit(data)
+            labels[np.arange(n_samples), kmeans.labels_] = 1
+        elif type == 'random':
+            rng = np.random.default_rng(seed=seed)
+            idx = rng.choice(n_components, size=n_samples)
+            labels[np.arange(n_samples),idx] = 1   
+         
+        means, sigmas, counts = get_initial_values(data,labels)
+        
+        priors = np.ones((n_components, 1)) / n_components
+        
+        prev_log_lkh = 0
+        
+        start = time.time()
+        
+        for it in tqdm(range(max_iter)):
+            n_iter_ = it + 1
+
+            posteriors, likelihood  = expectation(data,means,sigmas,priors)
+
+            for i in range(n_components):
+                likelihood[:, i] = likelihood[:, i] * priors[i]
+                
+            log_lkh = np.sum(np.log(np.sum(likelihood, 1)), 0)
+            difference = abs(prev_log_lkh - log_lkh)
+            prev_log_lkh = log_lkh
+            if difference < change_tolerance:
+                break
+            
+            means, sigmas, priors = maximation(data,n_samples,posteriors)
+            
+        cluster_centers = means
+        
+        posteriors, likelihood  = expectation(data,means,sigmas,priors)
+        
+        preds = np.argmax(posteriors, 1)
+        
+        predictions = brain_mask.flatten()
+        predictions[predictions == 255] = preds + 1
+        
+        t2_seg_res = predictions.reshape(t1.shape)  
+        
+        t2_t = time.time() - start
+    
+    if operation == 'Kmeans':
+        start = time.time()
+        model = KMeans(
         n_clusters=n_components, 
         random_state=seed).fit(data)
-        labels[np.arange(n_samples), kmeans.labels_] = 1
-    elif type == 'random':
-        rng = np.random.default_rng(seed=seed)
-        idx = rng.choice(n_components, size=n_samples)
-        labels[np.arange(n_samples),idx] = 1   
-         
-    means, sigmas, counts = get_initial_values(data,labels)
-    
-    priors = np.ones((n_components, 1)) / n_components
-    
-    prev_log_lkh = 0
-    
-    start = time.time()
-    
-    for it in tqdm(range(max_iter)):
-        n_iter_ = it + 1
-
-        posteriors, likelihood  = expectation(data,means,sigmas,priors)
-
-        for i in range(n_components):
-            likelihood[:, i] = likelihood[:, i] * priors[i]
-            
-        log_lkh = np.sum(np.log(np.sum(likelihood, 1)), 0)
-        difference = abs(prev_log_lkh - log_lkh)
-        prev_log_lkh = log_lkh
-        if difference < change_tolerance:
-            break
-        
-        means, sigmas, priors = maximation(data,n_samples,posteriors)
-        
-    cluster_centers = means
-    
-    posteriors, likelihood  = expectation(data,means,sigmas,priors)
-    
-    preds = np.argmax(posteriors, 1)
-    
-    predictions = brain_mask.flatten()
-    predictions[predictions == 255] = preds + 1
-    
-    t2_seg_res = predictions.reshape(t1.shape)  
-    
-    t2_t = time.time() - start
+        preds = model.predict(data)
+        predictions = brain_mask.flatten()
+        predictions[predictions == 255] = preds + 1
+        t2_seg_res = predictions.reshape(t1.shape)
+        t2_t = time.time() - start
     
     return t1_seg_res, t2_seg_res, t1_t, t2_t
 
