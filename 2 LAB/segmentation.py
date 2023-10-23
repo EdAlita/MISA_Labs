@@ -69,7 +69,7 @@ def min_max_normalization(img):
     img = (img - img.min()) / (img.max() - img.min()) * 255
     return img
 
-def get_initial_values(x,labels,cov_reg=1e-6):
+def get_initial_values(x,labels,cov_reg=1e-9):
     n_components = labels.shape[1]
     n_feat = x.shape[1]
     min_val = 10 * np.finfo(labels.dtype).eps
