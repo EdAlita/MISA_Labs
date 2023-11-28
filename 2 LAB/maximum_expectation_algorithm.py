@@ -14,21 +14,19 @@ from warnings import simplefilter
 simplefilter(action='ignore', category=FutureWarning)
 
 class maximum_expectation_algorithm:
-    def __init__(self, expected_components=3, maximum_iteration=100, change_tolerance=1e-6, seed=123):
+    def __init__(self, expected_components=3, maximum_iteration=100, change_tolerance=1e-3, seed=123):
         self.expected_components = expected_components
         self.maximum_iteration = maximum_iteration
         self.change_tolerance = change_tolerance
         self.seed = seed
 
     def maximation_phase(self, x, posteriors):
-        labels = np.zeros((x.shape[0], self.expected_components))
-        labels[np.arange(x.shape[0]), np.argmax(posteriors, axis=1)] = 1
-
-        posteriors = posteriors * labels
         counts = np.sum(posteriors, 0)
         weighted_avg = np.dot(posteriors.T, x)
+        
+        epsilon = 1e-8  # A small number to avoid division by zero
+        means = weighted_avg / (counts[:, np.newaxis] + epsilon)
 
-        means = weighted_avg / counts[:, np.newaxis]
 
         sigmas = np.zeros((self.expected_components, x.shape[1], x.shape[1]))
         for i in range(self.expected_components):
@@ -67,7 +65,7 @@ class maximum_expectation_algorithm:
                 sigmas = (sigmas[:, np.newaxis])[:, np.newaxis]
         return means, sigmas
 
-    def tissue_segmentation(self, T1, T2, brain_mask, type='knn', operation='EM'):
+    def tissue_segmentation(self, T1, T2, brain_mask, type='knn', operation='EM', label_pro= None):
         t1_array = self.min_max_normalization(T1)
         t2_array = self.min_max_normalization(T2)
 
@@ -83,6 +81,11 @@ class maximum_expectation_algorithm:
             if type == 'knn':
                 kmeans = KMeans(n_clusters=self.expected_components, random_state=self.seed).fit(data_vector)
                 labels[np.arange(number_samples), kmeans.labels_] = 1
+            elif type == 'label_propragation':
+                if label_pro == None:
+                    print('Missing label Propragation')
+                else:
+                    labels[np.arange(number_samples), label_pro] = 1
             elif type == 'random':
                 rng = np.random.default_rng(seed=self.seed)
                 idx = rng.choice(self.expected_components, size=number_samples)
